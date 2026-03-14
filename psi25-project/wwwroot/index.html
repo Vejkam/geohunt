@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Street View Example</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+
+      #street-view {
+        height: 100vh;
+        width: 100%;
+      }
+
+      #mini-map-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 280px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(6px);
+        z-index: 10;
+      }
+
+      #mini-map {
+        height: 180px;
+        width: 100%;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="street-view"></div>
+    <div id="mini-map-container">
+      <div id="message-container"></div>
+      <div id="mini-map"></div>
+      <div id="button-container" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+        <button id="submit-button" style="padding: 8px 16px; border: none; border-radius: 4px; background-color: #007bff; color: white; cursor: pointer; width: 100%;">Submit guess</button>
+      </div>
+    </div>
+    <script src="Scripts/streetView.js"></script>
+    <script async
+      src="https://maps.googleapis.com/maps/api/js?key=<API>&callback=initMap">
+    </script>
+  </body>
+</html>

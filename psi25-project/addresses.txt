@@ -1,0 +1,100 @@
+Tokyo, Japan
+Delhi, India
+Shanghai, China
+São Paulo, Brazil
+Mexico City, Mexico
+Cairo, Egypt
+Dhaka, Bangladesh
+Mumbai, India
+Beijing, China
+Osaka, Japan
+Karachi, Pakistan
+Chongqing, China
+Istanbul, Turkey
+Buenos Aires, Argentina
+Kolkata, India
+Lagos, Nigeria
+Kinshasa, DR Congo
+Manila, Philippines
+Rio de Janeiro, Brazil
+Guangzhou, China
+Lahore, Pakistan
+Shenzhen, China
+Bangalore, India
+Moscow, Russia
+Tianjin, China
+Jakarta, Indonesia
+London, UK
+Lima, Peru
+Bangkok, Thailand
+New York City, USA
+Chengdu, China
+Nagoya, Japan
+Tehran, Iran
+Ho Chi Minh City, Vietnam
+Hyderabad, India
+Bogotá, Colombia
+Wuhan, China
+Hong Kong, China
+Ahmedabad, India
+Kuala Lumpur, Malaysia
+Hangzhou, China
+Foshan, China
+Shijiazhuang, China
+Riyadh, Saudi Arabia
+Santiago, Chile
+Baghdad, Iraq
+Surat, India
+Madrid, Spain
+Suzhou, China
+Pune, India
+Harbin, China
+Houston, USA
+Dallas, USA
+Toronto, Canada
+Dar es Salaam, Tanzania
+Miami, USA
+Belo Horizonte, Brazil
+Singapore, Singapore
+Philadelphia, USA
+Atlanta, USA
+Fukuoka, Japan
+Khartoum, Sudan
+Barcelona, Spain
+Johannesburg, South Africa
+Saint Petersburg, Russia
+Qingdao, China
+Dalian, China
+Washington DC, USA
+Alexandria, Egypt
+Yangon, Myanmar
+Jinan, China
+Guadalajara, Mexico
+Boston, USA
+Monterrey, Mexico
+Nairobi, Kenya
+Melbourne, Australia
+Rome, Italy
+Montreal, Canada
+Sydney, Australia
+Casablanca, Morocco
+Brasília, Brazil
+Cape Town, South Africa
+Durban, South Africa
+Medellín, Colombia
+Kano, Nigeria
+Changsha, China
+Naples, Italy
+Tel Aviv, Israel
+Recife, Brazil
+Porto Alegre, Brazil
+Fortaleza, Brazil
+Ankara, Turkey
+Izmir, Turkey
+Chennai, India
+Jaipur, India
+Lucknow, India
+Kabul, Afghanistan
+Vilnius, Lithuania
+Paris, France
+Gran Tarajal, Spain

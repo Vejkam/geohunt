@@ -1,0 +1,46 @@
+# Build output
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+
+# Rider / JetBrains
+.idea/
+
+# VS Code settings (optional — remove if you want to share project settings)
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+*.nuget/
+
+# Test results
+TestResult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage-report*/
+
+# Azure Functions local settings
+local.settings.json
+
+# System files
+.DS_Store
+Thumbs.db
+
+# ASP.NET secrets
+secrets.json
