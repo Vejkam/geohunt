@@ -9,8 +9,12 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [enableTwoFactor, setEnableTwoFactor] = useState(false);
+  const [twoFactorProvider, setTwoFactorProvider] = useState("Email");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
@@ -29,11 +33,27 @@ export default function Signup() {
         headers: {
           "Content-Type": "application/json",
         },
-        // adjust payload to match your backend
-        body: JSON.stringify({ username, password, email }),
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          enableTwoFactor,
+          twoFactorProvider,
+          phoneNumber,
+        }),
       });
 
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
+        if (data?.twoFactorToken) {
+          setSuccessMessage(
+            `Account created. Your two-factor code is: ${data.twoFactorToken}. Please use it to log in.`
+          );
+          setError("");
+          return;
+        }
+
         navigate("/login");
       } else {
         const data = await res.json().catch(() => null);
@@ -73,6 +93,13 @@ export default function Signup() {
             {error && (
               <div className="mb-4 w-full p-3 rounded-lg border border-red-500/70 bg-red-900/60 text-red-100 text-sm">
                 {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-4 w-full p-3 rounded-lg border border-emerald-500/70 bg-emerald-900/60 text-emerald-100 text-sm">
+                {successMessage}
               </div>
             )}
 
@@ -129,6 +156,45 @@ export default function Signup() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
+            </div>
+
+            {/* Two-Factor Authentication */}
+            <div className="mb-4 w-full flex flex-col gap-3">
+              <label className="inline-flex items-center gap-2 text-sm text-blue-100">
+                <input
+                  type="checkbox"
+                  checked={enableTwoFactor}
+                  onChange={(e) => setEnableTwoFactor(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-blue-500"
+                />
+                Enable two-factor authentication
+              </label>
+
+              {enableTwoFactor && (
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm text-blue-100">
+                    Provider
+                    <select
+                      value={twoFactorProvider}
+                      onChange={(e) => setTwoFactorProvider(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-blue-50"
+                    >
+                      <option value="Email">Email</option>
+                      <option value="Phone">Phone</option>
+                    </select>
+                  </label>
+
+                  {twoFactorProvider === "Phone" && (
+                    <input
+                      type="tel"
+                      placeholder="Phone number"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full pl-3 pr-4 py-2 rounded-lg border border-slate-700 bg-slate-900/70 text-blue-50 placeholder-blue-200/40 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Signup Button */}

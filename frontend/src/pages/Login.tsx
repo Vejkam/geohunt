@@ -6,6 +6,9 @@ export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [twoFactorProvider, setTwoFactorProvider] = useState("Email");
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
@@ -20,13 +23,16 @@ export default function Login() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
         navigate("/");
+      } else if (data?.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
+        setTwoFactorProvider(data.provider ?? "Email");
+        setError("Two-factor authentication required. Enter the code sent to your email or phone.");
       } else {
-        const data = await res.json();
-        setError(
-          data.message || "Login failed. Please check your credentials."
-        );
+        setError(data?.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -34,9 +40,38 @@ export default function Login() {
     }
   };
 
+  const handleVerifyTwoFactor = async () => {
+    try {
+      setError("");
+
+      const res = await fetch("/api/Account/verify-2fa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, provider: twoFactorProvider, code: twoFactorCode }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok) {
+        navigate("/");
+      } else {
+        setError(data?.message || "Invalid two-factor code.");
+      }
+    } catch (err) {
+      console.error("Two-factor verification error:", err);
+      setError("An error occurred. Please try again.");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleLogin();
+    if (requiresTwoFactor) {
+      handleVerifyTwoFactor();
+    } else {
+      handleLogin();
+    }
   };
 
   return (
@@ -85,9 +120,25 @@ export default function Login() {
                            focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                required={!requiresTwoFactor}
+                disabled={requiresTwoFactor}
               />
             </div>
+
+            {requiresTwoFactor && (
+              <div className="relative mb-6 w-full">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/80" size={20} />
+                <input
+                  type="text"
+                  placeholder="Two-factor code"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-700 bg-slate-900/70 text-blue-50 placeholder-blue-200/40 
+                             focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value)}
+                  required
+                />
+              </div>
+            )}
 
             {/* Login Button */}
             <button
@@ -97,7 +148,7 @@ export default function Login() {
                          shadow-lg shadow-blue-900/40
                          hover:from-blue-400 hover:to-sky-300 transition"
             >
-              Log In
+              {requiresTwoFactor ? "Verify code" : "Log In"}
             </button>
 
             {/* Signup Link */}
