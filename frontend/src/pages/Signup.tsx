@@ -10,8 +10,6 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [enableTwoFactor, setEnableTwoFactor] = useState(false);
-  const [twoFactorProvider, setTwoFactorProvider] = useState("Email");
-  const [phoneNumber, setPhoneNumber] = useState("");
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -38,8 +36,6 @@ export default function Signup() {
           password,
           email,
           enableTwoFactor,
-          twoFactorProvider,
-          phoneNumber,
         }),
       });
 
@@ -48,7 +44,7 @@ export default function Signup() {
       if (res.ok) {
         if (data?.twoFactorToken) {
           setSuccessMessage(
-            `Account created. Your two-factor code is: ${data.twoFactorToken}. Please use it to log in.`
+            `Account created. Your email authentication code is: ${data.twoFactorToken}. Please use it to log in.`
           );
           setError("");
           return;
@@ -117,7 +113,6 @@ export default function Signup() {
               />
             </div>
 
-            {/* Email (optional, remove if you don't use email) */}
             <div className="relative mb-4 w-full">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/80" size={20} />
               <input
@@ -127,6 +122,7 @@ export default function Signup() {
                            focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
 
@@ -158,8 +154,7 @@ export default function Signup() {
               />
             </div>
 
-            {/* Two-Factor Authentication */}
-            <div className="mb-4 w-full flex flex-col gap-3">
+            <div className="mb-4 w-full">
               <label className="inline-flex items-center gap-2 text-sm text-blue-100">
                 <input
                   type="checkbox"
@@ -167,34 +162,8 @@ export default function Signup() {
                   onChange={(e) => setEnableTwoFactor(e.target.checked)}
                   className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-blue-500"
                 />
-                Enable two-factor authentication
+                Enable email authentication
               </label>
-
-              {enableTwoFactor && (
-                <div className="flex flex-col gap-3">
-                  <label className="text-sm text-blue-100">
-                    Provider
-                    <select
-                      value={twoFactorProvider}
-                      onChange={(e) => setTwoFactorProvider(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-blue-50"
-                    >
-                      <option value="Email">Email</option>
-                      <option value="Phone">Phone</option>
-                    </select>
-                  </label>
-
-                  {twoFactorProvider === "Phone" && (
-                    <input
-                      type="tel"
-                      placeholder="Phone number"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full pl-3 pr-4 py-2 rounded-lg border border-slate-700 bg-slate-900/70 text-blue-50 placeholder-blue-200/40 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Signup Button */}

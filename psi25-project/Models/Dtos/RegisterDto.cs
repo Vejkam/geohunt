@@ -16,7 +16,5 @@ namespace psi25_project.Models.Dtos
         public bool EnableTwoFactor { get; set; }
 
         public string TwoFactorProvider { get; set; } = "Email";
-
-        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

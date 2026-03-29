@@ -20,22 +20,14 @@ namespace psi25_project.Services
         {
             if (model.EnableTwoFactor)
             {
-                if (string.IsNullOrWhiteSpace(model.TwoFactorProvider))
-                    model.TwoFactorProvider = "Email";
-
-                if (string.Equals(model.TwoFactorProvider, "Phone", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(model.PhoneNumber))
-                    return (false, new[] { new IdentityError { Code = "PhoneRequired", Description = "Phone number is required for phone two-factor authentication." } }, null);
-
-                if (!string.Equals(model.TwoFactorProvider, "Email", StringComparison.OrdinalIgnoreCase) && !string.Equals(model.TwoFactorProvider, "Phone", StringComparison.OrdinalIgnoreCase))
-                    return (false, new[] { new IdentityError { Code = "InvalidTwoFactorProvider", Description = "Two-factor provider must be Email or Phone." } }, null);
+                model.TwoFactorProvider = "Email";
             }
 
             var user = new ApplicationUser
             {
                 UserName = model.Username,
                 Email = model.Email,
-                CreatedAt = DateTime.UtcNow,
-                PhoneNumber = string.IsNullOrWhiteSpace(model.PhoneNumber) ? null : model.PhoneNumber
+                CreatedAt = DateTime.UtcNow
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
