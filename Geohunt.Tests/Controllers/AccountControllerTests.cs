@@ -26,7 +26,7 @@ namespace Geohunt.Tests.Controllers
             var dto = new RegisterDto { Username = "user", Email = "a@b.com", Password = "Password123!" };
 
             _mockService.Setup(s => s.RegisterAsync(It.IsAny<RegisterDto>()))
-                .ReturnsAsync((true, null as IEnumerable<IdentityError>));
+                .ReturnsAsync((true, null as IEnumerable<IdentityError>, null as string));
 
             // Act
             var result = await _controller.Register(dto);
@@ -44,7 +44,7 @@ namespace Geohunt.Tests.Controllers
             var errors = new List<IdentityError> { new IdentityError { Description = "Failed" } };
 
             _mockService.Setup(s => s.RegisterAsync(It.IsAny<RegisterDto>()))
-                .ReturnsAsync((false, errors));
+                .ReturnsAsync((false, errors, null as string));
 
             // Act
             var result = await _controller.Register(dto);
@@ -61,7 +61,7 @@ namespace Geohunt.Tests.Controllers
             var dto = new LoginDto { Username = "user", Password = "Password123!" };
 
             _mockService.Setup(s => s.LoginAsync(It.IsAny<LoginDto>()))
-                .ReturnsAsync((true, null as string));
+                .ReturnsAsync((true, null as string, false, null as string));
 
             // Act
             var result = await _controller.Login(dto);
@@ -78,7 +78,7 @@ namespace Geohunt.Tests.Controllers
             var dto = new LoginDto { Username = "user", Password = "wrong" };
 
             _mockService.Setup(s => s.LoginAsync(It.IsAny<LoginDto>()))
-                .ReturnsAsync((false, "Invalid username or password."));
+                .ReturnsAsync((false, "Invalid username or password.", false, null as string));
 
             // Act
             var result = await _controller.Login(dto);

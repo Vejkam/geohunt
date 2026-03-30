@@ -9,8 +9,10 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [enableTwoFactor, setEnableTwoFactor] = useState(false);
 
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
@@ -29,11 +31,25 @@ export default function Signup() {
         headers: {
           "Content-Type": "application/json",
         },
-        // adjust payload to match your backend
-        body: JSON.stringify({ username, password, email }),
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          enableTwoFactor,
+        }),
       });
 
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
+        if (data?.twoFactorToken) {
+          setSuccessMessage(
+            `Account created. Your email authentication code is: ${data.twoFactorToken}. Please use it to log in.`
+          );
+          setError("");
+          return;
+        }
+
         navigate("/login");
       } else {
         const data = await res.json().catch(() => null);
@@ -76,6 +92,13 @@ export default function Signup() {
               </div>
             )}
 
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-4 w-full p-3 rounded-lg border border-emerald-500/70 bg-emerald-900/60 text-emerald-100 text-sm">
+                {successMessage}
+              </div>
+            )}
+
             {/* Username */}
             <div className="relative mb-4 w-full">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/80" size={20} />
@@ -90,7 +113,6 @@ export default function Signup() {
               />
             </div>
 
-            {/* Email (optional, remove if you don't use email) */}
             <div className="relative mb-4 w-full">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/80" size={20} />
               <input
@@ -100,6 +122,7 @@ export default function Signup() {
                            focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
 
@@ -129,6 +152,18 @@ export default function Signup() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="mb-4 w-full">
+              <label className="inline-flex items-center gap-2 text-sm text-blue-100">
+                <input
+                  type="checkbox"
+                  checked={enableTwoFactor}
+                  onChange={(e) => setEnableTwoFactor(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-blue-500"
+                />
+                Enable email authentication
+              </label>
             </div>
 
             {/* Signup Button */}

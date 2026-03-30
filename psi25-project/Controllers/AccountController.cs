@@ -22,12 +22,12 @@ namespace psi25_project.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var (succeeded, errors) = await _accountService.RegisterAsync(model);
+            var (succeeded, errors, twoFactorToken) = await _accountService.RegisterAsync(model);
 
             if (!succeeded)
                 return BadRequest(errors);
 
-            return Ok(new { Message = "User registered successfully." });
+            return Ok(new { Message = "User registered successfully.", TwoFactorToken = twoFactorToken });
         }
 
         [HttpPost("login")]
@@ -36,12 +36,30 @@ namespace psi25_project.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var (succeeded, error) = await _accountService.LoginAsync(model);
+            var (succeeded, error, requiresTwoFactor, twoFactorProvider) = await _accountService.LoginAsync(model);
 
+            if (!succeeded)
+            {
+                if (requiresTwoFactor)
+                    return Unauthorized(new { Message = error, RequiresTwoFactor = true, Provider = twoFactorProvider });
+
+                return Unauthorized(new { Message = error });
+            }
+
+            return Ok(new { Message = "User logged in successfully." });
+        }
+
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> VerifyTwoFactor([FromBody] TwoFactorDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (succeeded, error) = await _accountService.VerifyTwoFactorAsync(model);
             if (!succeeded)
                 return Unauthorized(new { Message = error });
 
-            return Ok(new { Message = "User logged in successfully." });
+            return Ok(new { Message = "Two-factor authentication successful." });
         }
 
         [HttpPost("logout")]

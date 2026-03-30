@@ -16,8 +16,13 @@ namespace psi25_project.Services
             _signInManager = signInManager;
         }
 
-        public async Task<(bool Succeeded, IEnumerable<IdentityError>? Errors)> RegisterAsync(RegisterDto model)
+        public async Task<(bool Succeeded, IEnumerable<IdentityError>? Errors, string? TwoFactorToken)> RegisterAsync(RegisterDto model)
         {
+            if (model.EnableTwoFactor)
+            {
+                model.TwoFactorProvider = "Email";
+            }
+
             var user = new ApplicationUser
             {
                 UserName = model.Username,
@@ -28,19 +33,57 @@ namespace psi25_project.Services
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
-                return (false, result.Errors);
+                return (false, result.Errors, null);
+
+            if (model.EnableTwoFactor)
+            {
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, model.TwoFactorProvider);
+                await _userManager.AddToRoleAsync(user, "Player");
+                return (true, null, twoFactorToken);
+            }
 
             await _userManager.AddToRoleAsync(user, "Player");
-            return (true, null);
+            return (true, null, null);
         }
 
-        public async Task<(bool Succeeded, string? Error)> LoginAsync(LoginDto model)
+        public async Task<(bool Succeeded, string? Error, bool RequiresTwoFactor, string? TwoFactorProvider)> LoginAsync(LoginDto model)
         {
             var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
-                return (true, null);
+                return (true, null, false, null);
 
-            return (false, "Invalid username or password.");
+            if (result.RequiresTwoFactor)
+            {
+                var user = await _userManager.FindByNameAsync(model.Username);
+                string? provider = null;
+                if (user != null)
+                {
+                    var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
+                    provider = providers.Count > 0 ? providers[0] : null;
+                }
+
+                return (false, "Two-factor authentication required.", true, provider);
+            }
+
+            return (false, "Invalid username or password.", false, null);
+        }
+
+        public async Task<(bool Succeeded, string? Error)> VerifyTwoFactorAsync(TwoFactorDto model)
+        {
+            var user = await _userManager.FindByNameAsync(model.Username);
+            if (user == null)
+                return (false, "Invalid username or two-factor code.");
+
+            if (!await _userManager.GetTwoFactorEnabledAsync(user))
+                return (false, "Two-factor authentication is not enabled for this user.");
+
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(user, model.Provider, model.Code);
+            if (!isValid)
+                return (false, "Invalid two-factor code.");
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return (true, null);
         }
 
         public async Task LogoutAsync()
