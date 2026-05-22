@@ -14,6 +14,10 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [twoFactorProvider, setTwoFactorProvider] = useState("Email");
+  const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
 
   const handleSignup = async () => {
     try {
@@ -43,8 +47,11 @@ export default function Signup() {
 
       if (res.ok) {
         if (data?.twoFactorToken) {
+          setRequiresVerification(true);
+          setTwoFactorProvider(data.provider ?? "Email");
+          setTwoFactorToken(data.twoFactorToken);
           setSuccessMessage(
-            `Account created. Your email authentication code is: ${data.twoFactorToken}. Please use it to log in.`
+            `Account created. Your email authentication code is: ${data.twoFactorToken}. Enter it below to complete registration.`
           );
           setError("");
           return;
@@ -52,10 +59,40 @@ export default function Signup() {
 
         navigate("/login");
       } else {
-        const data = await res.json().catch(() => null);
-        setError(
-          data?.message || "Sign up failed. Please check your details and try again."
-        );
+        const parseArray = (items: any[]) =>
+          items
+            .flatMap((item) => {
+              if (typeof item === "string") return [item];
+              if (typeof item === "object" && item !== null) {
+                return Object.values(item).flatMap((value) =>
+                  Array.isArray(value) ? value : [value]
+                );
+              }
+              return [JSON.stringify(item)];
+            })
+            .map((item) =>
+              typeof item === "string"
+                ? item
+                : item.description || item.code || item.message || JSON.stringify(item)
+            )
+            .join(" ");
+
+        const parseResponse = (payload: any): string => {
+          if (!payload) return "Sign up failed. Please check your details and try again.";
+          if (typeof payload === "string") return payload;
+          if (Array.isArray(payload)) return parseArray(payload);
+          if (payload.errors) {
+            if (Array.isArray(payload.errors)) return parseArray(payload.errors);
+            if (typeof payload.errors === "object") return parseArray(Object.values(payload.errors));
+          }
+          if (payload.message) return payload.message;
+          if (payload.title) return payload.title;
+          if (payload.detail) return payload.detail;
+          return JSON.stringify(payload);
+        };
+
+        const message = parseResponse(data) || `${res.status} ${res.statusText}`;
+        setError(message);
       }
     } catch (err) {
       console.error("Signup error:", err);
@@ -65,9 +102,48 @@ export default function Signup() {
     }
   };
 
+  const handleVerifyTwoFactor = async () => {
+    try {
+      setError("");
+      setLoading(true);
+
+      const res = await fetch("/api/Account/verify-2fa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          provider: twoFactorProvider,
+          code: verificationCode,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok) {
+        navigate("/");
+        return;
+      }
+
+      setError(data?.message || "Invalid authentication code.");
+    } catch (err) {
+      console.error("Verification error:", err);
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loading) handleSignup();
+    if (!loading) {
+      if (requiresVerification) {
+        handleVerifyTwoFactor();
+      } else {
+        handleSignup();
+      }
+    }
   };
 
   return (
@@ -160,11 +236,27 @@ export default function Signup() {
                   type="checkbox"
                   checked={enableTwoFactor}
                   onChange={(e) => setEnableTwoFactor(e.target.checked)}
+                  disabled={requiresVerification}
                   className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-blue-500"
                 />
                 Enable email authentication
               </label>
             </div>
+
+            {requiresVerification && (
+              <div className="relative mb-6 w-full">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200/80" size={20} />
+                <input
+                  type="text"
+                  placeholder="Enter authentication code"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-700 bg-slate-900/70 text-blue-50 placeholder-blue-200/40 
+                             focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  required
+                />
+              </div>
+            )}
 
             {/* Signup Button */}
             <button
@@ -176,7 +268,7 @@ export default function Signup() {
                          hover:from-blue-400 hover:to-sky-300 transition
                          disabled:opacity-60 disabled:cursor-not-allowed`}
             >
-              {loading ? "Creating account..." : "Sign Up"}
+              {loading ? "Processing..." : requiresVerification ? "Verify code" : "Sign Up"}
             </button>
 
             {/* Login Link */}

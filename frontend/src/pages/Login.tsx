@@ -32,7 +32,11 @@ export default function Login() {
         setTwoFactorProvider(data.provider ?? "Email");
         setError("Email authentication required. Enter the code sent to your email.");
       } else {
-        setError(data?.message || "Login failed. Please check your credentials.");
+        const message =
+          data?.message || data?.Message ||
+          (typeof data === "string" ? data : undefined) ||
+          `${res.status} ${res.statusText}`;
+        setError(message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
       console.error("Login error:", err);
